@@ -3,6 +3,7 @@ window.selG = null;
 window.h = 1;
 
 window.onload = function() {
+    // Карта
     map = L.map('map', { zoomControl: false }).setView([42.6977, 23.3219], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -23,32 +24,42 @@ window.onload = function() {
     });
 };
 
-/* --- ФУНКЦИИ --- */
-window.nav = function(id, btn) {
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    const target = document.getElementById(id + '-screen');
-    if (target) target.style.display = 'block';
-    if (id !== 'map') window.closeBookingSheet();
+/* --- НАВИГАЦИЯ --- */
+window.nav = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    if (id !== 'map') {
+        document.getElementById(id + '-screen').classList.add('active');
+        window.closeBookingSheet();
+    }
 };
 
-window.handleAuth = function() { document.getElementById('login-screen').style.display = 'none'; };
-window.handleRegister = function() { document.getElementById('register-screen').style.display = 'block'; };
-window.closeRegister = function() { document.getElementById('register-screen').style.display = 'none'; };
-window.loginAsGuest = function() { 
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('profile-content').style.display = 'block';
-};
+window.handleAuth = function() { document.getElementById('login-screen').classList.remove('active'); };
+window.handleRegister = function() { document.getElementById('register-screen').classList.add('active'); };
+window.closeRegister = function() { document.getElementById('register-screen').classList.remove('active'); };
+window.loginAsGuest = function() { document.getElementById('login-screen').classList.remove('active'); };
 
+/* --- КОЛИ --- */
 window.addNewCarField = function() {
     const list = document.getElementById('cars-list');
     const div = document.createElement('div');
-    div.style.margin = "10px 0";
-    div.innerHTML = `<input type="text" placeholder="Рег. номер" style="padding:10px; width:70%;"> <button onclick="this.parentElement.remove()" style="color:red;">X</button>`;
+    div.className = 'car-item';
+    div.innerHTML = `
+        <input type="text" placeholder="Рег. номер (напр. СВ1234АВ)">
+        <button onclick="this.parentElement.remove()">✕</button>
+    `;
     list.appendChild(div);
 };
 
-window.closeBookingSheet = function() { document.getElementById('bookingSheet').classList.remove('active'); };
-window.changeH = function(v) { window.h = Math.max(1, window.h + v); updateUI(); };
+/* --- ГАРАЖ --- */
+window.closeBookingSheet = function() { 
+    document.getElementById('bookingSheet').classList.remove('active');
+    document.getElementById('navOptions').style.display = 'none';
+};
+
+window.changeH = function(v) { 
+    window.h = Math.max(1, window.h + v); 
+    updateUI(); 
+};
 
 function updateUI() {
     if(!window.selG) return;
@@ -58,7 +69,7 @@ function updateUI() {
 
 window.showNavOptions = function() {
     const opts = document.getElementById('navOptions');
-    opts.style.display = (opts.style.display === 'none') ? 'grid' : 'none';
+    opts.style.display = (opts.style.display === 'flex') ? 'none' : 'flex';
 };
 
 window.openMap = function(type) {
@@ -69,8 +80,7 @@ window.openMap = function(type) {
     window.open(url, '_blank');
 };
 
-window.toggleDarkMode = function() { document.body.classList.toggle('dark-mode'); };
+window.toggleDarkMode = function() { document.body.classList.toggle('dark-theme'); };
 window.logout = function() { location.reload(); };
-window.sendBookingRequest = function() { alert("Резервирано!"); };
+window.sendBookingRequest = function() { alert("Резервацията е успешна!"); window.closeBookingSheet(); };
 window.sendLenderRequest = function() { alert("Заявката е изпратена!"); };
-window.changeLang = function() { alert("Езикът е сменен!"); };
