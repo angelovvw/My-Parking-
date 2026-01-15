@@ -6,89 +6,93 @@
     <title>My Parking Sofia</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
-<body>
+<body class="light-mode">
 
     <div id="map"></div>
 
-    <div id="login-screen" class="screen active">
-        <div class="glass-card">
-            <h1>My Parking</h1>
-            <p>Добре дошли в София</p>
-            <div class="input-group">
-                <input type="email" id="authEmail" placeholder="Имейл">
-                <input type="password" id="authPass" placeholder="Парола">
-            </div>
-            <button class="btn-primary" onclick="window.handleAuth()">ВЛЕЗ</button>
-            <button class="btn-secondary" onclick="window.handleRegister()">РЕГИСТРАЦИЯ</button>
-            <p class="guest-link" onclick="window.loginAsGuest()">Продължи като гост</p>
+    <div id="register-screen" class="screen">
+        <div class="auth-container">
+            <h2>Създай Профил</h2>
+            <input type="text" id="regName" placeholder="Име и Фамилия">
+            <input type="email" id="regEmail" placeholder="Имейл">
+            <input type="password" id="regPass" placeholder="Парола">
+            <button class="btn-main btn-green" onclick="window.processNewRegistration()">ЗАВЪРШИ</button>
+            <button class="btn-main" style="background:#888; margin-top:10px;" onclick="window.closeRegister()">Отказ</button>
         </div>
     </div>
 
-    <div id="register-screen" class="screen">
-        <div class="glass-card">
-            <h2>Регистрация</h2>
-            <div class="input-group">
-                <input type="text" placeholder="Име и Фамилия">
-                <input type="email" placeholder="Имейл">
-                <input type="password" placeholder="Парола">
-            </div>
-            <button class="btn-primary" onclick="window.closeRegister()">СЪЗДАЙ ПРОФИЛ</button>
-            <button class="btn-secondary" onclick="window.closeRegister()">ОТКАЗ</button>
+    <div id="login-screen" class="screen" style="display: block;">
+        <div class="auth-container">
+            <h2 id="lang-auth-title">Влез в My Parking</h2>
+            <input type="email" id="authEmail" placeholder="Имейл">
+            <input type="password" id="authPass" placeholder="Парола">
+            <button class="btn-main btn-green" onclick="window.handleAuth()">ВХОД</button>
+            <button class="btn-main" onclick="window.handleRegister()" style="background: #2c3e50; color: white; margin-top:10px;">РЕГИСТРАЦИЯ</button>
+            <button class="btn-main" style="background:#888; margin-top:10px;" onclick="window.loginAsGuest()">Влез като Гост</button>
         </div>
     </div>
 
     <div id="profile-screen" class="screen">
-        <div class="glass-card full-height">
-            <h3>👤 Моят Профил</h3>
-            <div class="section">
-                <h4>Моите автомобили</h4>
-                <div id="cars-list">
-                    </div>
-                <button class="btn-add" onclick="window.addNewCarField()">+ Добави автомобил</button>
-            </div>
-            <button class="btn-secondary" onclick="window.sendLenderRequest()">Стани Lender</button>
+        <div id="profile-content" style="padding: 20px;">
+            <div class="section-title">МОИТЕ АВТОМОБИЛИ</div>
+            <div id="cars-list"></div>
+            <button class="btn-main" onclick="window.addNewCarField()" style="background: #3498db; margin: 15px 0;">+ ДОБАВИ КОЛА</button>
+            <hr>
+            <div class="section-title">Стани Lender</div>
+            <input type="text" id="lAddr" placeholder="Адрес на гаража">
+            <button class="btn-main btn-green" onclick="window.sendLenderRequest()" style="margin-top:10px;">ИЗПРАТИ ЗАЯВКА</button>
         </div>
     </div>
 
     <div id="settings-screen" class="screen">
-        <div class="glass-card">
-            <h3>⚙️ Настройки</h3>
-            <button class="btn-outline" onclick="window.toggleDarkMode()">🌓 Смени Темата</button>
-            <button class="btn-danger" onclick="window.logout()">ИЗХОД</button>
+        <div class="auth-container">
+            <h2>Настройки</h2>
+            <button class="btn-main" onclick="window.toggleDarkMode()" style="background:#eee; margin-bottom:10px;">🌓 Смени Тема</button>
+            <select id="langSelect" onchange="window.changeLang()" style="width:100%; padding:10px;">
+                <option value="bg">Български</option>
+                <option value="en">English</option>
+            </select>
+            <button class="btn-main btn-red" onclick="window.logout()" style="margin-top:20px; background:#e74c3c; color:white;">Изход</button>
         </div>
     </div>
 
     <div id="bookingSheet" class="bottom-sheet">
-        <div class="sheet-handle" onclick="window.closeBookingSheet()"></div>
-        <div class="sheet-content">
-            <h2 id="gTitle">Зареждане...</h2>
-            <p id="gAddress">Адрес...</p>
-            <div class="booking-controls">
-                <div class="hours-picker">
-                    <button onclick="window.changeH(-1)">−</button>
-                    <span id="hLabel">1ч</span>
-                    <button onclick="window.changeH(1)">+</button>
-                </div>
-                <div class="price-tag">
-                    <small>Общо:</small>
-                    <span id="gPrice">0.00 лв.</span>
-                </div>
-            </div>
-            <button class="btn-nav-main" onclick="window.showNavOptions()">🚗 Навигация</button>
-            <div id="navOptions" class="nav-grid">
-                <button onclick="window.openMap('google')">Google Maps</button>
-                <button onclick="window.openMap('waze')">Waze</button>
-            </div>
-            <button class="btn-book-now" onclick="window.sendBookingRequest()">РЕЗЕРВИРАЙ СЕГА</button>
+        <div class="handle" onclick="window.closeBookingSheet()"></div>
+        <h2 id="gTitle">Обект</h2>
+        <p id="gAddress">Адрес</p>
+        <div class="counter-box">
+            <button onclick="window.changeH(-1)">−</button>
+            <div id="hLabel">1ч</div>
+            <button onclick="window.changeH(1)">+</button>
+        </div>
+        <button class="btn-main" onclick="window.showNavOptions()" style="background:#eee;">🚗 Навигация</button>
+        <div id="navOptions" style="display:none; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+            <button class="btn-main" onclick="window.openMap('google')" style="background:#4285F4; color:white;">Google</button>
+            <button class="btn-main" onclick="window.openMap('waze')" style="background:#33ccff; color:white;">Waze</button>
+        </div>
+        <div class="price-footer">
+            <div>ЦЕНА: <strong id="gPrice">0.00 лв.</strong></div>
+            <button class="btn-main btn-green" onclick="window.sendBookingRequest()">Резервирай</button>
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item" onclick="window.nav('map')">📍<span>Карта</span></div>
-        <div class="nav-item" onclick="window.nav('profile')">👤<span>Профил</span></div>
-        <div class="nav-item" onclick="window.nav('settings')">⚙️<span>Още</span></div>
+    <nav class="main-nav">
+        <button class="nav-item active" onclick="window.nav('map', this)">📍 Карта</button>
+        <button class="nav-item" onclick="window.nav('profile', this)">👤 Профил</button>
+        <button class="nav-item" onclick="window.nav('settings', this)">⚙️ Настр.</button>
     </nav>
+
+    <div id="car-selector-modal" class="modal-overlay">
+        <div class="modal-glass-card">
+            <h3>Избор на кола</h3>
+            <select id="car-select-dropdown" style="width:100%; padding:10px; margin:15px 0;"></select>
+            <button class="confirm-btn" onclick="window.startPayment()">ПЛАТИ</button>
+            <button class="cancel-link" onclick="window.closeCarModal()">Отказ</button>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
