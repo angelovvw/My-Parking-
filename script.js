@@ -3,7 +3,7 @@ window.selG = null;
 window.h = 1;
 
 window.onload = function() {
-    // Карта
+    // Инициализация на картата
     map = L.map('map', { zoomControl: false }).setView([42.6977, 23.3219], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -24,41 +24,22 @@ window.onload = function() {
     });
 };
 
-/* --- НАВИГАЦИЯ --- */
-window.nav = function(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    if (id !== 'map') {
-        document.getElementById(id + '-screen').classList.add('active');
-        window.closeBookingSheet();
-    }
+/* --- НАВИГАЦИЯ МЕЖДУ ЕКРАНИТЕ --- */
+window.nav = function(id, btn) {
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    const target = document.getElementById(id + '-screen');
+    if (target) target.style.display = 'block';
+    
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    
+    if (id === 'map') window.closeBookingSheet();
 };
 
-window.handleAuth = function() { document.getElementById('login-screen').classList.remove('active'); };
-window.handleRegister = function() { document.getElementById('register-screen').classList.add('active'); };
-window.closeRegister = function() { document.getElementById('register-screen').classList.remove('active'); };
-window.loginAsGuest = function() { document.getElementById('login-screen').classList.remove('active'); };
-
-/* --- КОЛИ --- */
-window.addNewCarField = function() {
-    const list = document.getElementById('cars-list');
-    const div = document.createElement('div');
-    div.className = 'car-item';
-    div.innerHTML = `
-        <input type="text" placeholder="Рег. номер (напр. СВ1234АВ)">
-        <button onclick="this.parentElement.remove()">✕</button>
-    `;
-    list.appendChild(div);
-};
-
-/* --- ГАРАЖ --- */
-window.closeBookingSheet = function() { 
-    document.getElementById('bookingSheet').classList.remove('active');
-    document.getElementById('navOptions').style.display = 'none';
-};
-
-window.changeH = function(v) { 
-    window.h = Math.max(1, window.h + v); 
-    updateUI(); 
+/* --- РЕЗЕРВАЦИЯ --- */
+window.changeH = function(v) {
+    window.h = Math.max(1, window.h + v);
+    updateUI();
 };
 
 function updateUI() {
@@ -67,9 +48,13 @@ function updateUI() {
     document.getElementById('gPrice').innerText = (window.selG.price * window.h).toFixed(2) + " лв.";
 }
 
+window.closeBookingSheet = function() {
+    document.getElementById('bookingSheet').classList.remove('active');
+};
+
 window.showNavOptions = function() {
     const opts = document.getElementById('navOptions');
-    opts.style.display = (opts.style.display === 'flex') ? 'none' : 'flex';
+    opts.style.display = (opts.style.display === 'none') ? 'grid' : 'none';
 };
 
 window.openMap = function(type) {
@@ -80,7 +65,64 @@ window.openMap = function(type) {
     window.open(url, '_blank');
 };
 
-window.toggleDarkMode = function() { document.body.classList.toggle('dark-theme'); };
-window.logout = function() { location.reload(); };
-window.sendBookingRequest = function() { alert("Резервацията е успешна!"); window.closeBookingSheet(); };
-window.sendLenderRequest = function() { alert("Заявката е изпратена!"); };
+/* --- ПОТРЕБИТЕЛИ --- */
+window.handleAuth = function() {
+    document.getElementById('login-screen').style.display = 'none';
+};
+
+window.handleRegister = function() {
+    document.getElementById('register-screen').style.display = 'block';
+};
+
+window.closeRegister = function() {
+    document.getElementById('register-screen').style.display = 'none';
+};
+
+window.loginAsGuest = function() {
+    document.getElementById('login-screen').style.display = 'none';
+};
+
+window.logout = function() {
+    location.reload();
+};
+
+window.toggleDarkMode = function() {
+    document.body.classList.toggle('dark-mode');
+};
+
+/* --- КОЛИ И ПЛАЩАНЕ --- */
+window.addNewCarField = function() {
+    const list = document.getElementById('cars-list');
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.style.marginBottom = '10px';
+    div.innerHTML = `
+        <input type="text" placeholder="Рег. номер" style="flex:1;">
+        <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none; font-size:20px;">×</button>
+    `;
+    list.appendChild(div);
+};
+
+window.sendBookingRequest = function() {
+    document.getElementById('car-selector-modal').style.display = 'flex';
+};
+
+window.closeCarModal = function() {
+    document.getElementById('car-selector-modal').style.display = 'none';
+};
+
+window.startPayment = function() {
+    alert("Плащането е успешно! Резервацията ви е потвърдена.");
+    window.closeCarModal();
+    window.closeBookingSheet();
+};
+
+window.processNewRegistration = function() {
+    alert("Регистрацията е успешна!");
+    window.closeRegister();
+};
+
+window.sendLenderRequest = function() {
+    alert("Вашата заявка за Lender е изпратена за преглед.");
+};
