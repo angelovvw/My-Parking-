@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <script src="https://js.stripe.com/v3/"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Parking Sofia</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body class="light-mode">
+
+    <div id="register-screen" class="screen" style="z-index: 4500; display: none;">
+        <div class="auth-container">
+            <h2>Създай Профил</h2>
+            <div class="edit-group">
+                <label>Име и Фамилия *</label>
+                <input type="text" id="regName" placeholder="Иван Иванов">
+            </div>
+            <div class="edit-group">
+                <label>Имейл *</label>
+                <input type="email" id="regEmail" placeholder="example@mail.com">
+            </div>
+            <div class="edit-group">
+                <label>Телефонен номер *</label>
+                <input type="tel" id="regPhone_new" placeholder="0888 xxx xxx">
+            </div>
+            <div class="edit-group">
+                <label>Парола *</label>
+                <input type="password" id="regPass" placeholder="Минимум 6 символа">
+            </div>
+            <div class="edit-group">
+                <label>Потвърди Парола *</label>
+                <input type="password" id="regPassConfirm" placeholder="Въведете паролата отново">
+            </div>
+            <button class="btn-main btn-green" onclick="window.processNewRegistration()">ЗАВЪРШИ РЕГИСТРАЦИЯТА</button>
+            <button class="btn-main" style="background:#888; margin-top:10px;" onclick="window.closeRegister()">Отказ</button>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="login-screen" class="screen" style="display: block; z-index: 4000;">
+        <div class="auth-container">
+            <h2 id="lang-auth-title">Влез в My Parking</h2>
+            <div class="edit-group">
+                <label>Имейл</label>
+                <input type="email" id="authEmail">
+            </div>
+            <div class="edit-group">
+                <label>Парола</label>
+                <input type="password" id="authPass">
+            </div>
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="rememberMe" style="width: 20px; height: 20px;">
+                <label for="rememberMe" style="font-size: 14px;">Запомни ме</label>
+            </div>
+            <button class="btn-main btn-green" onclick="window.handleAuth()" id="btn-auth-main" style="margin-bottom: 12px;">ВХОД</button>
+            <button class="btn-main" onclick="window.handleRegister()" id="btn-reg-main" style="background: #2c3e50; color: white;">РЕГИСТРАЦИЯ</button>
+            <button class="btn-main" style="background:#888; margin-top:10px;" onclick="window.loginAsGuest()" id="btn-guest">Влез като Гост</button>
+        </div>
+    </div>
+
+    <div id="profile-screen" class="screen">
+        <div id="profile-locked" style="text-align: center; margin-top: 50px;">
+            <p>Трябва да влезете в профила си, за да видите тази секция.</p>
+            <button class="btn-main btn-green" onclick="location.reload()">КЪМ ВХОД</button>
+        </div>
+        <div id="profile-content" style="display:none; padding: 20px;">
+            <div class="section-title">МОИТЕ АВТОМОБИЛИ</div>
+            <div id="cars-list"></div>
+            <button class="btn-main" onclick="window.addNewCarField()" style="background: #3498db; margin: 15px 0;">+ ДОБАВИ ДРУГА КОЛА</button>
+            
+            <div class="section-title" style="color:#27ae60; margin-top:30px;">Стани Lender</div>
+            <div class="edit-group">
+                <label>Тип обект</label>
+                <select id="lType">
+                    <option value="Гараж">Гараж</option>
+                    <option value="Затворен гараж">Затворен гараж</option>
+                    <option value="Паркомясто">Паркомясто</option>
+                    <option value="Подземен паркинг">Подземен паркинг</option>
+                </select>
+            </div>
+            <div class="edit-group"><label>Адрес *</label><input type="text" id="lAddr"></div>
+            <div class="edit-group"><label>Снимки (задължително) *</label><input type="file" id="lPhotos" multiple accept="image/*"></div>
+            <div class="edit-group"><label>Видео (задължително) *</label><input type="file" id="lVideo" accept="video/*"></div>
+            <div class="edit-group"><label>Телефон за връзка *</label><input type="tel" id="lPhone"></div>
+            <button class="btn-main btn-green" onclick="window.sendLenderRequest()" id="btn-lender-send">ИЗПРАТИ ЗАЯВКА</button>
+        </div>
+    </div>
+
+    <div id="settings-screen" class="screen">
+        <div class="auth-container">
+            <h2 id="lang-settings-title">Настройки</h2>
+            <button class="btn-main btn-nav" onclick="window.toggleDarkMode()" style="background:#eee; margin-bottom:10px;">🌓 Dark / Light Mode</button>
+            
+            <div class="settings-section">
+                <h3 class="section-title">👤 Лична информация</h3>
+                <div class="edit-group">
+                    <label>Име и Фамилия</label>
+                    <input type="text" id="edit-name">
+                </div>
+                <div class="edit-group">
+                    <label>Имейл адрес</label>
+                    <input type="email" id="edit-email">
+                </div>
+                <div class="edit-group">
+                    <label>Телефонен номер</label>
+                    <input type="tel" id="edit-phone">
+                </div>
+                <button class="btn-main btn-green" onclick="window.updateFullProfile()">✅ ЗАПАЗИ ПРОМЕНИТЕ</button>
+            </div>
+
+            <div class="edit-group">
+                <label id="lang-label">Език</label>
+                <select id="langSelect" onchange="window.changeLang()">
+                    <option value="bg">Български</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <button class="btn-main btn-red" onclick="window.logout()" style="margin-top:30px; background:#e74c3c; color:white;" id="btn-logout">Изход</button>
+        </div>
+    </div>
+
+    <div id="bookingSheet" class="bottom-sheet">
+        <div class="handle"></div>
+        <h2 id="gTitle">Обект</h2>
+        <p id="gAddress">Адрес</p>
+        <div class="counter-box">
+            <button class="counter-btn" onclick="window.changeH(-1)">−</button>
+            <div id="hLabel">1ч</div>
+            <button class="counter-btn" onclick="window.changeH(1)">+</button>
+        </div>
+        <button class="btn-main btn-nav" onclick="window.showNavOptions()" style="margin-top:10px; background:#eee;" id="btn-nav-draw">🚗 Навигация</button>
+        <div id="navOptions" class="nav-options" style="display:none;">
+            <button class="btn-main google-btn" onclick="window.openMap('google')" style="background:#4285F4; color:white;">Google Maps</button>
+            <button class="btn-main waze-btn" onclick="window.openMap('waze')" style="background:#33ccff; color:white;">Waze</button>
+        </div>
+        <div class="price-footer">
+            <div><small id="lang-price-label">ЦЕНА</small><br><strong id="gPrice">0.00 лв.</strong></div>
+            <button class="btn-main btn-green" onclick="window.sendBookingRequest()" id="btn-book">Резервирай</button>
+        </div>
+    </div>
+
+    <nav class="main-nav">
+        <button class="nav-item active" onclick="window.nav('map', this)">📍<span id="nav-map">Карта</span></button>
+        <button class="nav-item" onclick="window.nav('profile', this)">👤<span id="nav-profile">Профил</span></button>
+        <button class="nav-item" onclick="window.nav('settings', this)">⚙️<span id="nav-settings">Настройки</span></button>
+    </nav>
+
+    <div id="car-selector-modal" style="display:none;">
+        <div class="modal-glass-card">
+            <div class="modal-header">
+                <span class="icon">🚗</span>
+                <h3>Избор на автомобил</h3>
+                <p>Моля, изберете с коя кола ще паркирате</p>
+            </div>
+            <div class="modal-body">
+                <div class="select-wrapper">
+                    <select id="car-select-dropdown"></select>
+                </div>
+            </div>
+            <button class="confirm-btn" onclick="window.startPayment()"><span>ПЛАТИ И РЕЗЕРВИРАЙ</span></button>
+            <button class="cancel-link" onclick="window.closeCarModal()">Отказ</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
