@@ -37,10 +37,6 @@ const translations = {
 };
 
 window.onload = function() {
-    // EmailJS инициализация (ако имаш ключ)
-    if(typeof emailjs !== 'undefined') emailjs.init("NFzu5SLvhCtMIR1db");
-    
-    // Карта
     map = L.map('map', { zoomControl: false }).setView([42.6977, 23.3219], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -59,45 +55,48 @@ window.onload = function() {
             updateUI();
         });
     });
-
     applyLang();
 };
 
-/* --- НАВИГАЦИЯ МЕЖДУ ЕКРАНИ --- */
+/* --- УПРАВЛЕНИЕ НА КОЛИ --- */
+window.addNewCarField = function() {
+    const list = document.getElementById('cars-list');
+    if (!list) return;
+    const div = document.createElement('div');
+    div.className = 'edit-group';
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.style.marginBottom = '10px';
+    div.innerHTML = `
+        <input type="text" placeholder="Рег. номер (СВ1234АВ)" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
+        <button onclick="this.parentElement.remove()" style="background:#ff4444; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">X</button>
+    `;
+    list.appendChild(div);
+};
+
+/* --- ОСНОВНИ ФУНКЦИИ --- */
 window.nav = function(id, btn) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     const target = document.getElementById(id + '-screen');
     if (target) target.style.display = 'block';
-    
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
-    // Скриваме менюто на гаража, ако сменим екрана
     if (id !== 'map') window.closeBookingSheet();
 };
 
-/* --- УПРАВЛЕНИЕ НА ГАРАЖА --- */
 window.closeBookingSheet = function() {
     document.getElementById('bookingSheet').classList.remove('active');
-    document.getElementById('navOptions').style.display = 'none';
 };
 
-window.showNavOptions = function() {
-    const opts = document.getElementById('navOptions');
-    opts.style.display = (opts.style.display === 'none' || opts.style.display === '') ? 'grid' : 'none';
+window.loginAsGuest = function() { 
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('profile-locked').style.display = 'none';
+    document.getElementById('profile-content').style.display = 'block';
 };
 
-window.openMap = function(type) {
-    if (!window.selG) return;
-    const url = type === 'google' 
-        ? `https://www.google.com/maps/dir/?api=1&destination=${window.selG.lat},${window.selG.lng}`
-        : `https://waze.com/ul?ll=${window.selG.lat},${window.selG.lng}&navigate=yes`;
-    window.open(url, '_blank');
-};
-
-window.changeH = function(v) {
-    window.h = Math.max(1, window.h + v);
-    updateUI();
+window.toggleDarkMode = function() {
+    document.body.classList.toggle('dark-mode');
+    document.body.classList.toggle('light-mode');
 };
 
 function updateUI() {
@@ -106,60 +105,6 @@ function updateUI() {
     document.getElementById('gPrice').innerText = (window.selG.price * window.h).toFixed(2) + " лв.";
 }
 
-/* --- АУТЕНТИКАЦИЯ --- */
-window.handleRegister = function() {
-    document.getElementById('register-screen').style.display = 'block';
-};
-
-window.closeRegister = function() {
-    document.getElementById('register-screen').style.display = 'none';
-};
-
-window.loginAsGuest = function() { 
-    document.getElementById('login-screen').style.display = 'none';
-    currentUser = { role: 'guest', name: 'Гост' };
-    alert("Влязохте като гост.");
-};
-
-window.handleAuth = function() {
-    const email = document.getElementById('authEmail').value;
-    if(email) {
-        document.getElementById('login-screen').style.display = 'none';
-        currentUser = { email: email, role: 'user' };
-        document.getElementById('profile-locked').style.display = 'none';
-        document.getElementById('profile-content').style.display = 'block';
-    } else {
-        alert("Моля въведете имейл");
-    }
-};
-
-/* --- РЕЗЕРВАЦИЯ --- */
-window.sendBookingRequest = function() {
-    document.getElementById('car-selector-modal').style.display = 'flex';
-};
-
-window.closeCarModal = function() {
-    document.getElementById('car-selector-modal').style.display = 'none';
-};
-
-window.startPayment = function() {
-    alert("Симулация на плащане... Резервацията за " + window.selG.title + " е успешна!");
-    window.closeCarModal();
-    window.closeBookingSheet();
-};
-
-/* --- НАСТРОЙКИ --- */
-window.toggleDarkMode = function() {
-    document.body.classList.toggle('dark-mode');
-    document.body.classList.toggle('light-mode');
-};
-
-window.changeLang = function() {
-    currentLang = document.getElementById('langSelect').value;
-    localStorage.setItem('lang', currentLang);
-    applyLang();
-};
-
 function applyLang() {
     const t = translations[currentLang];
     Object.keys(t).forEach(id => {
@@ -167,7 +112,3 @@ function applyLang() {
         if (el) el.innerText = t[id];
     });
 }
-
-window.logout = function() {
-    location.reload();
-};
