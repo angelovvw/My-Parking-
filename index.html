@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <div id="profile-screen" class="screen">
+    <div id="profile-screen" class="screen" style="display:none;">
         <div id="profile-locked" style="text-align: center; margin-top: 50px;">
             <p>Трябва да влезете в профила си, за да видите тази секция.</p>
             <button class="btn-main btn-green" onclick="location.reload()">КЪМ ВХОД</button>
@@ -90,7 +90,7 @@
         </div>
     </div>
 
-    <div id="settings-screen" class="screen">
+    <div id="settings-screen" class="screen" style="display:none;">
         <div class="auth-container">
             <h2 id="lang-settings-title">Настройки</h2>
             <button class="btn-main btn-nav" onclick="window.toggleDarkMode()" style="background:#eee; margin-bottom:10px;">🌓 Dark / Light Mode</button>
@@ -124,7 +124,7 @@
     </div>
 
     <div id="bookingSheet" class="bottom-sheet">
-        <div class="handle"></div>
+        <div class="handle" onclick="window.closeBookingSheet()" style="cursor:pointer;"></div>
         <h2 id="gTitle">Обект</h2>
         <p id="gAddress">Адрес</p>
         <div class="counter-box">
@@ -158,7 +158,9 @@
             </div>
             <div class="modal-body">
                 <div class="select-wrapper">
-                    <select id="car-select-dropdown"></select>
+                    <select id="car-select-dropdown">
+                        <option value="default">Основен автомобил</option>
+                    </select>
                 </div>
             </div>
             <button class="confirm-btn" onclick="window.startPayment()"><span>ПЛАТИ И РЕЗЕРВИРАЙ</span></button>
