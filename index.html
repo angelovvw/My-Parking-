@@ -25,8 +25,8 @@
             <h2>Регистрация</h2>
             <input type="text" placeholder="Име">
             <input type="email" placeholder="Имейл">
-            <button class="btn-main btn-green" onclick="window.closeRegister()">ЗАПАЗИ</button>
-            <button class="btn-main" onclick="window.closeRegister()" style="background:#888;">ОТКАЗ</button>
+            <button class="btn-main btn-green" onclick="window.closeRegister()">ЗАВЪРШИ</button>
+            <button class="btn-main" onclick="window.closeRegister()" style="background:#888;">Отказ</button>
         </div>
     </div>
 
@@ -34,17 +34,22 @@
 
     <div id="profile-screen" class="screen" style="display:none;">
         <div id="profile-content" style="padding:20px;">
-            <h3>МОИТЕ АВТОМОБИЛИ</h3>
+            <div class="section-title">МОИТЕ АВТОМОБИЛИ</div>
             <div id="cars-list"></div>
-            <button class="btn-main" onclick="window.addNewCarField()" style="background: #3498db;">+ ДОБАВИ КОЛА</button>
+            <button class="btn-main" onclick="window.addNewCarField()" style="background: #3498db; margin: 15px 0;">+ ДОБАВИ КОЛА</button>
+            <button class="btn-main btn-green" onclick="window.sendLenderRequest()">Стани Lender</button>
         </div>
     </div>
 
     <div id="settings-screen" class="screen" style="display:none;">
         <div class="auth-container">
             <h2>Настройки</h2>
-            <button class="btn-main" onclick="window.toggleDarkMode()">🌓 Dark / Light Mode</button>
-            <button class="btn-main btn-red" onclick="window.logout()">Изход</button>
+            <button class="btn-main" onclick="window.toggleDarkMode()">🌓 Смени Тема</button>
+            <select id="langSelect" onchange="window.changeLang()" style="width:100%; padding:10px; margin:10px 0;">
+                <option value="bg">Български</option>
+                <option value="en">English</option>
+            </select>
+            <button class="btn-main btn-red" onclick="window.logout()" style="background:#e74c3c; color:white;">Изход</button>
         </div>
     </div>
 
